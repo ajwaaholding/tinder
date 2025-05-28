@@ -1,0 +1,28 @@
+1. Register User
+2. Login
+3. Update Profile
+4. Feed Page - Explore
+5. Send Connection
+6. See Our Matches
+7. See Request Sent / Recieved
+
+Requirement -> Planning => Design -> Execution -> Test -> Deploy -> Maintain
+HLD- Tech stack, monolith or microservice , Security , caching etc
+LLD - Backend DB Design , API Design
+
+DB Design - Single Responsiblity Principle needs to be followed
+
+- User Collection - firstname , lastname , email , password , gender
+- Connection Collection - Relationship Information - who to whom and status - fromUserId , toUserId , status - pending,ignored, rejected,accepted,blocked
+
+API Design - REST API HTTP METHOD + URL MAKES API
+/signup - POST
+/login - POST
+/profile - GET
+/profile - POST
+/profile - PATCH
+/profile - DELETE
+/sendRequest POST - Ignore / Intrested
+/reviewRequest POST - accept / reject
+/reviewRequest GET
+/getConnections - GET
