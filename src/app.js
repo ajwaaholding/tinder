@@ -2,20 +2,35 @@ const express = require("express");
 const connectDB = require("./config/database"); // also fixed the path (should be relative)
 const app = express();
 const User = require("./models/user");
-//Connecting To Server
-
+const { validateSignUp } = require("./utils/validation");
 app.use(express.json());
 
-//Register API
 app.post("/signup", async (req, res, next) => {
-  const data = req.body;
+  try {
+    //Validate Data
+    validateSignUp(req);
+    //Encrypt Data
 
-  const user = new User(data);
-  await user.save();
-  res.send("User Registered Sucessfuly");
+    // Save Data
+    const { firstName, lastName, email, age, gender, password } = req.body;
+
+    const user = new User({
+      firstName,
+      lastName,
+      email,
+      age,
+      gender,
+      password,
+    });
+    await User.createIndexes();
+    await user.save();
+    res.send("User Registered Sucessfuly");
+  } catch (err) {
+    console.log(err);
+    res.status(404).send(err.message);
+  }
 });
 
-//GET API for one
 app.get("/users", async (req, res) => {
   const userId = req.body.userId;
   try {
@@ -47,34 +62,45 @@ app.get("/feeds", async (req, res) => {
 // Delete by ID
 app.delete("/users", async (req, res) => {
   try {
-    await User.findByIdAndDelete(req.body.userId);
-    res.send("User Deleted Successfully");
+    const name = req.body.firstName;
+    await User.deleteMany({ firstName: name });
+    res.send("Users deleted successfullty");
   } catch (err) {
-    throw new Error(err.message);
+    throw new Error(err);
   }
+  // try {
+  //   await User.findByIdAndDelete(req.body.userId);
+  //   res.send("User Deleted Successfully");
+  // } catch (err) {
+  //   throw new Error(err.message);
+  // }
 });
 
-app.patch("/users", async (req, res) => {
+app.patch("/users/:id", async (req, res) => {
   try {
-    const userId = req.body.userId;
-    const data = req.body;
-    const user = await User.findByIdAndUpdate(userId, data, {
-      returnDocument: "after",
-    });
-    res.send(user);
-  } catch (err) {
-    throw new Error(err.message);
-  }
-});
-app.patch("/users", async (req, res) => {
-  try {
-    const userId = req.body.userId;
-    const data = req.body;
-    console.log(data, "User data");
-    const user = await User.findByIdAndUpdate(userId, data, {
-      returnDocument: "after",
-    });
-    res.send(user);
+    const userId = req.params.id;
+    const {
+      firstName,
+      lastName = "NA",
+      email,
+      age,
+      profileUrl,
+      about,
+      skills,
+      gender,
+    } = req.body;
+
+    //NEVER TRUST DATA PART
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { firstName, lastName, age, profileUrl, about, skills, gender },
+      {
+        returnDocument: "after",
+        runValidators: true,
+      }
+    );
+
+    res.send("User updated succesfully");
   } catch (err) {
     throw new Error(err.message);
   }
@@ -89,6 +115,7 @@ app.use("/", (err, req, res, next) => {
 connectDB()
   .then(() => {
     console.log("DB Connected Successfuly!");
+
     app.listen(7000, () => {
       console.log("Server Started");
     });
