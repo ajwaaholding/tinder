@@ -26,3 +26,6 @@ API Design - REST API HTTP METHOD + URL MAKES API
 /reviewRequest POST - accept / reject
 /reviewRequest GET
 /getConnections - GET
+
+
+- signup api - first

@@ -3,17 +3,18 @@ const connectDB = require("./config/database");
 const bcrypt = require("bcrypt");
 const app = express();
 const User = require("./models/user");
+const cookieParser = require("cookie-parser");
 const { validateSignUp, validateLogin } = require("./utils/validation");
-
-// to parse json to js
+const jwt = require("jsonwebtoken");
+const { userAuth } = require("./middlewears/verify");
 app.use(express.json());
 
-//signup API
+app.use(cookieParser());
 app.post("/signup", async (req, res, next) => {
   try {
     validateSignUp(req);
     const { firstName, lastName, email, age, gender, password } = req.body;
-    // encrypting password and storing the password
+
     const passwordHash = await bcrypt.hash(password, 10);
 
     const user = new User({
@@ -24,11 +25,10 @@ app.post("/signup", async (req, res, next) => {
       gender,
       password: passwordHash,
     });
-    await User.createIndexes();
+    // await User.createIndexes();
     await user.save();
     res.send("User Registered Sucessfuly");
   } catch (err) {
-    console.log(err);
     res.status(404).send(err.message);
   }
 });
@@ -45,16 +45,21 @@ app.post("/login", async (req, res, next) => {
     if (!isPasswordValid) {
       throw new Error("Invalid Credentials");
     } else {
+      const token = await jwt.sign({ userId: user._id }, "DevTinder@123");
+
+      res.cookie("token", token);
       res.send("User logged In Successfully!");
     }
-
-    console.log(isPasswordValid, "Is Valid");
-    console.log(user, "Is User Valid");
   } catch (err) {
     res.status(400).send("ERROR:", err.message);
   }
 });
 
+app.get("/profile", userAuth, async (req, res) => {
+  const { user } = req;
+
+  res.send("User Profile:" + user);
+});
 app.use("/", (err, req, res, next) => {
   if (err) {
     res.status(400).send(err.message, "Error Occured");
