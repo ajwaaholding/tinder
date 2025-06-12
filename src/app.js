@@ -7,9 +7,10 @@ const cookieParser = require("cookie-parser");
 const { validateSignUp, validateLogin } = require("./utils/validation");
 const jwt = require("jsonwebtoken");
 const { userAuth } = require("./middlewears/verify");
-app.use(express.json());
 
+app.use(express.json());
 app.use(cookieParser());
+
 app.post("/signup", async (req, res, next) => {
   try {
     validateSignUp(req);
@@ -41,12 +42,13 @@ app.post("/login", async (req, res, next) => {
     if (!user) {
       throw new Error("Invalid credentials");
     }
-    const isPasswordValid = await bcrypt.compare(password, user.password);
+    const isPasswordValid = await user.validatePassword({
+      userInputPassword: password,
+    });
     if (!isPasswordValid) {
       throw new Error("Invalid Credentials");
     } else {
-      const token = await jwt.sign({ userId: user._id }, "DevTinder@123");
-
+      const token = await user.getJWT();
       res.cookie("token", token);
       res.send("User logged In Successfully!");
     }

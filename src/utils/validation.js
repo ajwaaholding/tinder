@@ -3,7 +3,7 @@ const validator = require("validator");
 const validateSignUp = (req) => {
   const { firstName, lastName, email, password, profileUrl, age, gender } =
     req.body;
-  console.log(firstName, email, password);
+
   if (firstName.length < 3)
     throw new Error("First Name cannot be less then 3 charectors");
   if (!validator.isEmail(email)) throw new Error("Email not valid");

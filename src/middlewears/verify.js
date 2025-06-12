@@ -16,7 +16,6 @@ const userAuth = async (req, res, next) => {
         req.user = user;
         next();
       }
-      console.log(user, "UserData");
     }
   } catch (err) {
     res.status(404).send("Cannot get details", err.message);
