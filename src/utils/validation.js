@@ -15,4 +15,13 @@ const validateSignUp = (req) => {
   if (age < 18) throw new Error("You need to be greator than 18");
 };
 
-module.exports = { validateSignUp };
+const validateLogin = (req) => {
+  const { password, email } = req.body;
+  if (!validator.isEmail(email)) {
+    throw new Error("Email not Valid");
+  }
+  if (!validator.isStrongPassword(password)) {
+    throw new Error("Password not Valid!");
+  }
+};
+module.exports = { validateSignUp, validateLogin };

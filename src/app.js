@@ -1,18 +1,20 @@
 const express = require("express");
-const connectDB = require("./config/database"); // also fixed the path (should be relative)
+const connectDB = require("./config/database");
+const bcrypt = require("bcrypt");
 const app = express();
 const User = require("./models/user");
-const { validateSignUp } = require("./utils/validation");
+const { validateSignUp, validateLogin } = require("./utils/validation");
+
+// to parse json to js
 app.use(express.json());
 
+//signup API
 app.post("/signup", async (req, res, next) => {
   try {
-    //Validate Data
     validateSignUp(req);
-    //Encrypt Data
-
-    // Save Data
     const { firstName, lastName, email, age, gender, password } = req.body;
+    // encrypting password and storing the password
+    const passwordHash = await bcrypt.hash(password, 10);
 
     const user = new User({
       firstName,
@@ -20,7 +22,7 @@ app.post("/signup", async (req, res, next) => {
       email,
       age,
       gender,
-      password,
+      password: passwordHash,
     });
     await User.createIndexes();
     await user.save();
@@ -31,78 +33,25 @@ app.post("/signup", async (req, res, next) => {
   }
 });
 
-app.get("/users", async (req, res) => {
-  const userId = req.body.userId;
+app.post("/login", async (req, res, next) => {
   try {
-    const data = await User.findById(userId);
-    if (!data) {
-      res.send("No User Found");
-    } else {
-      res.send(data);
+    validateLogin(req);
+    const { email, password } = req.body;
+    const user = await User.findOne({ email });
+    if (!user) {
+      throw new Error("Invalid credentials");
     }
-  } catch (err) {
-    res.status(400).send(err.message);
-  }
-});
-
-//Get All Users
-app.get("/feeds", async (req, res) => {
-  try {
-    const data = await User.find({});
-    if (!data.length) {
-      res.send("No Users Found");
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      throw new Error("Invalid Credentials");
     } else {
-      res.send(data);
+      res.send("User logged In Successfully!");
     }
+
+    console.log(isPasswordValid, "Is Valid");
+    console.log(user, "Is User Valid");
   } catch (err) {
-    res.status(400).send(err.message);
-  }
-});
-
-// Delete by ID
-app.delete("/users", async (req, res) => {
-  try {
-    const name = req.body.firstName;
-    await User.deleteMany({ firstName: name });
-    res.send("Users deleted successfullty");
-  } catch (err) {
-    throw new Error(err);
-  }
-  // try {
-  //   await User.findByIdAndDelete(req.body.userId);
-  //   res.send("User Deleted Successfully");
-  // } catch (err) {
-  //   throw new Error(err.message);
-  // }
-});
-
-app.patch("/users/:id", async (req, res) => {
-  try {
-    const userId = req.params.id;
-    const {
-      firstName,
-      lastName = "NA",
-      email,
-      age,
-      profileUrl,
-      about,
-      skills,
-      gender,
-    } = req.body;
-
-    //NEVER TRUST DATA PART
-    const user = await User.findByIdAndUpdate(
-      userId,
-      { firstName, lastName, age, profileUrl, about, skills, gender },
-      {
-        returnDocument: "after",
-        runValidators: true,
-      }
-    );
-
-    res.send("User updated succesfully");
-  } catch (err) {
-    throw new Error(err.message);
+    res.status(400).send("ERROR:", err.message);
   }
 });
 
@@ -121,3 +70,76 @@ connectDB()
     });
   })
   .catch((err) => console.log(err.message));
+
+// app.get("/users", async (req, res) => {
+//   const userId = req.body.userId;
+//   try {
+//     const data = await User.findById(userId);
+//     if (!data) {
+//       res.send("No User Found");
+//     } else {
+//       res.send(data);
+//     }
+//   } catch (err) {
+//     res.status(400).send(err.message);
+//   }
+// });
+// app.get("/feeds", async (req, res) => {
+//   try {
+//     const data = await User.find({});
+//     if (!data.length) {
+//       res.send("No Users Found");
+//     } else {
+//       res.send(data);
+//     }
+//   } catch (err) {
+//     res.status(400).send(err.message);
+//   }
+// });
+
+// Delete by ID
+// app.delete("/users", async (req, res) => {
+//   try {
+//     const name = req.body.firstName;
+//     await User.deleteMany({ firstName: name });
+//     res.send("Users deleted successfullty");
+//   } catch (err) {
+//     throw new Error(err);
+//   }
+//   // try {
+//   //   await User.findByIdAndDelete(req.body.userId);
+//   //   res.send("User Deleted Successfully");
+//   // } catch (err) {
+//   //   throw new Error(err.message);
+//   // }
+// });
+
+// app.patch("/users/:id", async (req, res) => {
+//   try {
+//     const userId = req.params.id;
+//     const {
+//       firstName,
+//       lastName = "NA",
+//       email,
+//       age,
+//       profileUrl,
+//       about,
+//       skills,
+//       gender,
+//     } = req.body;
+
+//     //NEVER TRUST DATA PART
+//     const user = await User.findByIdAndUpdate(
+//       userId,
+//       { firstName, lastName, age, profileUrl, about, skills, gender },
+//       {
+//         returnDocument: "after",
+//         runValidators: true,
+//       }
+//     );
+
+//     res.send("User updated succesfully");
+//   } catch (err) {
+//     throw new Error(err.message);
+//   }
+// });
