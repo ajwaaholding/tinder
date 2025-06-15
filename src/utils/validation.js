@@ -63,5 +63,19 @@ const validateUserProfileUpdate = (req) => {
 };
 
 //validate update password
+const validatePassword = (req) => {
+  const password = req.body.password;
+  if (!password) {
+    throw new Error("Please provide new password");
+  }
+  if (!validator.isStrongPassword(password)) {
+    throw new Error("Password is not Strong Password");
+  }
+};
 
-module.exports = { validateSignUp, validateLogin, validateUserProfileUpdate };
+module.exports = {
+  validateSignUp,
+  validateLogin,
+  validateUserProfileUpdate,
+  validatePassword,
+};

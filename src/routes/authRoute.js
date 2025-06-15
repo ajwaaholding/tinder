@@ -46,7 +46,7 @@ router.post("/login", async (req, res, next) => {
       res.send("User logged In Successfully!");
     }
   } catch (err) {
-    res.status(400).send("ERROR:", err.message);
+    res.status(400).send("ERROR", err.message);
   }
 });
 
