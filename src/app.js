@@ -4,7 +4,7 @@ const cookieParser = require("cookie-parser");
 
 const authRouter = require("./routes/authRoute");
 const profileRouter = require("./routes/profileRoute");
-
+const connectionRequestRouter = require("./routes/requestRoute");
 const app = express();
 
 app.use(express.json());
@@ -12,7 +12,7 @@ app.use(cookieParser());
 
 app.use("/", authRouter);
 app.use("/", profileRouter);
-
+app.use("/", connectionRequestRouter);
 app.use("/", (err, req, res, next) => {
   if (err) {
     res.status(400).send(err.message, "Error Occured");
