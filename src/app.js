@@ -5,6 +5,8 @@ const cookieParser = require("cookie-parser");
 const authRouter = require("./routes/authRoute");
 const profileRouter = require("./routes/profileRoute");
 const connectionRequestRouter = require("./routes/requestRoute");
+const userRouter = require("./routes/userRoute");
+
 const app = express();
 
 app.use(express.json());
@@ -18,6 +20,7 @@ app.use("/", (err, req, res, next) => {
     res.status(400).send(err.message, "Error Occured");
   }
 });
+app.use("/");
 
 connectDB()
   .then(() => {

@@ -74,16 +74,24 @@ const validatePassword = (req) => {
 };
 
 //validate request
-const validateSendConnectionRequest = ({ status }) => {
-  const allowedStatus = ["interested", "ignored"];
-  if (!allowedStatus.includes(status)) {
-    throw new Error("Status not valid!!!");
+const validateConnectionRequest = ({ status, type = "send" }) => {
+  if (type === "send") {
+    const allowedStatus = ["interested", "ignored"];
+    if (!allowedStatus.includes(status)) {
+      throw new Error("Status not valid!!!");
+    }
+  } else {
+    const allowedStatus = ["accepted", "rejected"];
+    if (!allowedStatus.includes(status)) {
+      throw new Error("Status is not valid!!!");
+    }
   }
 };
+
 module.exports = {
   validateSignUp,
   validateLogin,
   validateUserProfileUpdate,
   validatePassword,
-  validateSendConnectionRequest,
+  validateConnectionRequest,
 };
