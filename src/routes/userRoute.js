@@ -3,6 +3,7 @@ const router = express.Router();
 const { userAuth } = require("../middlewears/verify");
 const ConnectionRequest = require("../models/request");
 const { USER_SAFE_DATA } = require("../constants/global");
+const User = require("../models/user");
 
 router.get("/user/requests", userAuth, async (req, res) => {
   try {
@@ -43,4 +44,44 @@ router.get("/user/connections", userAuth, async (req, res) => {
   }
 });
 
+//user feeds
+router.get("/user/feeds", userAuth, async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    let limit = parseInt(req.query.limit) || 10;
+    limit = limit > 50 ? 20 : limit;
+    const skip = (page - 1) * limit;
+
+    const loggedInUser = req.user;
+    const connectionRequest = await ConnectionRequest.find({
+      $or: [{ fromUserId: loggedInUser._id }, { toUserId: loggedInUser._id }],
+    }).select("fromUserId toUserId");
+
+    const existingConnectionIds = new Set();
+
+    connectionRequest.forEach((e) => {
+      existingConnectionIds.add(e.fromUserId);
+      existingConnectionIds.add(e.toUserId);
+    });
+
+    const users = await User.find({
+      $and: [
+        { _id: { $nin: Array.from(existingConnectionIds) } },
+        { _id: { $ne: loggedInUser._id } },
+      ],
+    })
+      .skip(skip)
+      .limit(limit);
+
+    console.log(users);
+
+    if (!users.length) {
+      throw new Error("Users not present Check again Later!!");
+    }
+
+    res.send("Connectionse fetched succesfully!");
+  } catch (err) {
+    res.status(400).send("Cannot be fetched!!!");
+  }
+});
 module.exports = router;

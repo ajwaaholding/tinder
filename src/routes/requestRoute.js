@@ -13,7 +13,6 @@ router.post("/request/send/:status/:toUserId", userAuth, async (req, res) => {
     const toUserId = req.params.toUserId;
     const status = req.params.status;
 
-    // check if its from valid status or not
     validateConnectionRequest({ status });
 
     //check if toUserId is present in database or not
