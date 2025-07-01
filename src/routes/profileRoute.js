@@ -12,7 +12,7 @@ const User = require("../models/user");
 router.get("/user/profile/view", userAuth, async (req, res) => {
   const { user } = req;
 
-  res.send("User Profile:" + user);
+  res.json({ data: user, status: 1 });
 });
 
 //edit

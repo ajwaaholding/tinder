@@ -19,7 +19,7 @@ router.post("/signup", async (req, res, next) => {
       gender,
       password: passwordHash,
     });
-    // await User.createIndexes();
+
     await user.save();
     res.send("User Registered Sucessfuly");
   } catch (err) {
@@ -29,21 +29,28 @@ router.post("/signup", async (req, res, next) => {
 
 router.post("/login", async (req, res, next) => {
   try {
+    console.log("request recieved");
     validateLogin(req);
     const { email, password } = req.body;
     const user = await User.findOne({ email });
     if (!user) {
-      throw new Error("Invalid credentials");
+      res.status(400).send("Invalid credentials");
     }
     const isPasswordValid = await user.validatePassword({
       userInputPassword: password,
     });
     if (!isPasswordValid) {
-      throw new Error("Invalid Credentials");
+      res.status(400).send("Invalid Credentials");
     } else {
       const token = await user.getJWT();
-      res.cookie("token", token);
-      res.send("User logged In Successfully!");
+      res.cookie("token", token, {
+        expires: new Date(Date.now() + 8 * 3600000),
+      });
+      res.json({
+        message: "User Logged In Successfully",
+        status: 1,
+        data: user,
+      });
     }
   } catch (err) {
     res.status(400).send("ERROR", err.message);
@@ -52,6 +59,8 @@ router.post("/login", async (req, res, next) => {
 
 //logOut User
 router.post("/logout", async (req, res) => {
-  res.cookie("token", null).send("Logged Out Successfully!!!");
+  res.cookie("token", null, { expires: new Date(Date.now()) });
+  console.log(req.cookies.token);
+  res.json({ message: "User logged Out Successfully!" });
 });
 module.exports = router;

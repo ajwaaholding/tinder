@@ -54,7 +54,6 @@ router.post(
       //validate status
       validateConnectionRequest({ status, type: "received" });
 
-      //check if that request is present or not
       const userRequest = await ConnectionRequest.findOne({
         _id: requestId,
         toUserId: loggedInUser._id,
