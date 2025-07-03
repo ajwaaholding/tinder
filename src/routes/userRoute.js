@@ -79,7 +79,7 @@ router.get("/user/feeds", userAuth, async (req, res) => {
       throw new Error("Users not present Check again Later!!");
     }
 
-    res.send("Connectionse fetched succesfully!");
+    res.json({ message: "Connectionse fetched succesfully!", data: users });
   } catch (err) {
     res.status(400).send("Cannot be fetched!!!");
   }
